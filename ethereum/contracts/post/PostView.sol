@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 
-import "./PostBalance.sol";
+import './PostBalance.sol';
 
 contract PostView is PostBalance {
   mapping (uint256 => mapping (address => bool)) public hasViewed;

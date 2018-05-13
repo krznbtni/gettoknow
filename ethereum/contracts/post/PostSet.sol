@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 
-import "./PostVote.sol";
+import './PostVote.sol';
 
 contract PostSet is PostVote {
   function setHash(uint256 _postId, string _newHash) public {
@@ -22,7 +22,6 @@ contract PostSet is PostVote {
     base[_postId] = packedBase;
   }
   
-  /* transaction cost: 41 069 -/- execution cost: 18 325 */
   function setPost(uint256 _postId, string _newHash, uint256 _newViewPrice, uint256 _newViewPricePercentage) public {
     require(postOwner[_postId] == msg.sender);
     postHashes[_postId] = _newHash;

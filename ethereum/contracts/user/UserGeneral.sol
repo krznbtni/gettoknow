@@ -1,8 +1,8 @@
 pragma solidity ^0.4.23;
 
-import "../libraries/Ownable.sol";
-import "../libraries/SafeMath.sol";
-import "../libraries/Users.sol";
+import '../libraries/Ownable.sol';
+import '../libraries/SafeMath.sol';
+import '../libraries/Users.sol';
 
 contract UserGeneral is Ownable {
   using Users for Users.User;

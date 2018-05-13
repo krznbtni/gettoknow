@@ -1,7 +1,7 @@
 pragma solidity ^0.4.23;
 
-import "../libraries/DataPacking.sol";
-import "../user/UserRegular.sol";
+import '../libraries/DataPacking.sol';
+import '../user/UserRegular.sol';
 
 contract PostStorage is UserRegular {
   using SafeMath for uint256;

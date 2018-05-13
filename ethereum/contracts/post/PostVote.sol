@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 
-import "./PostView.sol";
+import './PostView.sol';
 
 contract PostVote is PostView {
   event OnVote (uint256 indexed postId, bool indexed value, address indexed caller);

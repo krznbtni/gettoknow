@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 
-import "./UserOrganization.sol";
+import './UserOrganization.sol';
 
 contract UserRegular is UserOrganization {
   

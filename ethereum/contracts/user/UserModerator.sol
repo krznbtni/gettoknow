@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 
-import "./UserGeneral.sol";
+import './UserGeneral.sol';
 
 contract UserModerator is UserGeneral {
   modifier onlyModerator {

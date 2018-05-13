@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 
-import "./PostStorage.sol";
+import './PostStorage.sol';
 
 contract PostBalance is PostStorage {
   event OnDeposit (uint256 postId, uint256 amount, address caller);

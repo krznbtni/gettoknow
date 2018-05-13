@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 
-import "./PostSet.sol";
+import './PostSet.sol';
 
 contract PostDelete is PostSet {
   event OnDelete(uint256 postId, address caller);
