@@ -1,9 +1,10 @@
 {
-  "name": "zorroplate",
+  "name": "gettoknow",
   "version": "1.0.0",
   "description": "A boilerplate for creating Dapps. Inspired by Stephen Grider.",
   "main": "index.js",
   "scripts": {
+    "compile": "node ethereum/compile.js",
     "test": "mocha"
   },
   "repository": {

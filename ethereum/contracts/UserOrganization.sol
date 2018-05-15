@@ -26,7 +26,7 @@ contract UserOrganization is UserModerator {
     * @dev add Members to Organization
     * @param _toAdd User address
     */
-  function organizationAddMember(address[] _toAdd) public {
+  function organizationAddMembers(address[] _toAdd) public {
     require(memberOf[msg.sender] == managerOf[msg.sender] || managerOf[msg.sender] == msg.sender);
     addMembers(managerOf[msg.sender], _toAdd);
   }
@@ -35,7 +35,7 @@ contract UserOrganization is UserModerator {
     * @dev remove Members from Organzation
     * @param _toRemove User address
     */
-  function organizationRemoveMember(address[] _toRemove) public {
+  function organizationRemoveMembers(address[] _toRemove) public {
     require(memberOf[msg.sender] == managerOf[msg.sender] || managerOf[msg.sender] == msg.sender);
     removeMembers(managerOf[msg.sender], _toRemove);
   }
