@@ -14,5 +14,6 @@ contract PostDelete is PostSet {
     delete postHashes[_postId];
     delete base[_postId];
     delete votes[_postId];
+    delete postOwner[_postId];
   }
 }

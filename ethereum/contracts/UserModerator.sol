@@ -41,7 +41,7 @@ contract UserModerator is UserGeneral {
     * @param _organization Organzation address
     * @param _toAdd User address
     */
-  function moderatorAddMember(address _organization, address[] _toAdd) public onlyModerator {
+  function moderatorAddMembers(address _organization, address[] _toAdd) public onlyModerator {
     addMembers(_organization, _toAdd);
   }
   
@@ -50,7 +50,7 @@ contract UserModerator is UserGeneral {
     * @param _organization Organization address
     * @param _toRemove User address
     */
-  function moderatorRemoveMember(address _organization, address[] _toRemove) public onlyModerator {
+  function moderatorRemoveMembers(address _organization, address[] _toRemove) public onlyModerator {
     removeMembers(_organization, _toRemove);
   }
   

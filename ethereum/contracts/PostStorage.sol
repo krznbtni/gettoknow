@@ -21,8 +21,8 @@ contract PostStorage is UserRegular {
     
     bytes32 packedBase;
     packedBase = packedBase.setData(msg.value, 0, 64);
-    packedBase = packedBase.setData(_viewPrice, 64, 32);
-    packedBase = packedBase.setData(_viewPricePercentage, 95, 8);
+    packedBase = packedBase.setData(_viewPrice, 64, 64);
+    packedBase = packedBase.setData(_viewPricePercentage, 127, 8);
     
     base[postCount] = packedBase;
     postCount = postCount.add(1);
@@ -35,8 +35,8 @@ contract PostStorage is UserRegular {
     return (
       postHashes[_postId],
       packedBase.getData(0, 64),
-      packedBase.getData(64, 32),
-      packedBase.getData(95, 8),
+      packedBase.getData(64, 64),
+      packedBase.getData(127, 8),
       packedVotes.getData(0, 128), // upvotes
       packedVotes.getData(128, 128) // downvotes
     );

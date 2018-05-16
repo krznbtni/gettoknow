@@ -21,7 +21,7 @@ contract PostView is PostBalance {
     require(!hasViewed[_postId][msg.sender]);
     bytes32 packedBase = base[_postId];
     uint256 balance = packedBase.getData(0, 64);
-    uint256 viewPrice = packedBase.getData(64, 32);
+    uint256 viewPrice = packedBase.getData(64, 64);
     
     require(balance >= viewPrice);
     
