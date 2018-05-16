@@ -1,4 +1,4 @@
-const assert = require('assert'),
+const assert = require('chai').assert,
       ganache = require('ganache-cli'),
       Web3 = require('web3'),
       web3 = new Web3(ganache.provider());
@@ -216,11 +216,194 @@ describe('Contract: UserOrganization', () => {
   });
 
   describe('Function: organizationAddManager(address _user)', () => {
-    
+    it('should not allow a Regular member to add Manager', async () => {
+      let revert;
+      await factory.methods.organizationAddMembers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.organizationAddMembers([accounts[3]]).send({ from: accounts[2], gas: '1000000' });
+
+      try {
+        await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[3], gas: '1000000' })
+      } catch (e) {
+        revert = e;
+      };
+
+      assert.ok(revert instanceof Error);
+    });
+
+    it('should not allow an Organization to add a non-member as manager', async () => {
+      let revert;
+      
+      try {
+        await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[2], gas: '1000000' });
+      } catch (e) {
+        revert = e;
+      }
+
+      assert.ok(revert instanceof Error);
+    });
+
+    it('should not allow an Organization to add a manager who is already a manager of another organization', async () => {
+      let revert;
+      await factory.methods.organizationAddMembers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[2], gas: '1000000' });
+
+      try {
+        await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[3], gas: '1000000' });
+      } catch (e) {
+        revert = e;
+      }
+
+      assert.ok(revert instanceof Error);
+    });
+
+    it('should allow an Organization to add a non-manager member as manager', async () => {
+      await factory.methods.organizationAddMembers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[2], gas: '1000000' });
+
+      const managerOf = await factory.methods.managerOf(accounts[1]).call();
+
+      assert.equal(managerOf, accounts[2]);
+    });
   });
 
-  // describe('Function: organizationRemoveManager(address _user)', () => { });
+  describe('Function: organizationRemoveManager(address _user)', () => {
+    it('should not allow a Regular member to remove a manager', async () => {
+      let revert;
+      await factory.methods.organizationAddMembers([accounts[1], accounts[3]]).send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[2], gas: '1000000' });
 
-  // describe('Function: deleteOrganization()', () => { });
+      try {
+        await factory.methods.organizationRemoveManager(accounts[1]).send({ from: accounts[3], gas: '1000000' })
+      } catch (e) {
+        revert = e;
+      };
+
+      assert.ok(revert instanceof Error);
+    });
+
+    it('should not allow an Organization to remove a non-manager Member', async () => {
+      let revert;
+      await factory.methods.organizationAddMembers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
+
+      try {
+        await factory.methods.organizationRemoveManager(accounts[1]).send({ from: accounts[2], gas: '1000000' })
+      } catch (e) {
+        revert = e;
+      };
+
+      assert.ok(revert instanceof Error);
+    });
+
+    it('should not allow an Organization to remove a non-member Manager', async () => {
+      let revert;
+      await factory.methods.organizationAddMembers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[2], gas: '1000000' });
+
+      try {
+        await factory.methods.organizationRemoveManager(accounts[1]).send({ from: accounts[4], gas: '1000000' })
+      } catch (e) {
+        revert = e;
+      };
+
+      assert.ok(revert instanceof Error);
+    });
+
+    it('should allow an Organization to remove a Manager', async () => {
+      await factory.methods.organizationAddMembers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[2], gas: '1000000' });
+      const initialManagerOf = await factory.methods.managerOf(accounts[1]).call();
+
+      assert.equal(initialManagerOf, accounts[2]);
+
+      await factory.methods.organizationRemoveManager(accounts[1]).send({ from: accounts[2], gas: '1000000' })
+      const finalManagerOf = await factory.methods.managerOf(accounts[1]).call();
+
+      assert.notEqual(finalManagerOf, accounts[2]);
+    });
+  });
+
+  describe('Function: deleteOrganization()', () => {
+    it('should not allow a Regular member to delete the Organization', async () => {
+      let revert;
+      await factory.methods.organizationAddMembers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
+
+      try {
+        await factory.methods.deleteOrganization().send({ from: accounts[1], gas: '1000000' });
+      } catch (e) {
+        revert = e;
+      }
+
+      assert.ok(revert instanceof Error);
+    });
+
+    it('should not allow a Manager member to delete the Organization', async () => {
+      let revert;
+      await factory.methods.organizationAddMembers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[2], gas: '1000000' });
+
+      try {
+        await factory.methods.deleteOrganization().send({ from: accounts[1], gas: '1000000' });
+      } catch (e) {
+        revert = e;
+      }
+
+      assert.ok(revert instanceof Error);
+    });
+
+    it('should, for every member, remove all associations with the Organization', async () => {
+      await factory.methods.organizationAddMembers([accounts[1], accounts[3]]).send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[2], gas: '1000000' });
+
+      // get initial member 1 (regularOne) values
+      const initialMemberOfOne = await factory.methods.memberOf(accounts[1]).call();
+      const initialMemberIndexOne = await factory.methods.memberIndex(accounts[1]).call();
+      const initialManagerOfOne = await factory.methods.managerOf(accounts[1]).call();
+
+      // get initial member 2 (regularTwo) values
+      const initialMemberOfTwo = await factory.methods.memberOf(accounts[3]).call();
+      const initialMemberIndexTwo = await factory.methods.memberIndex(accounts[3]).call();
+
+      // delete the organization
+      await factory.methods.deleteOrganization().send({ from: accounts[2], gas: '1000000' });
+
+      // get final member 1 (regularOne) values
+      const finalMemberOfOne = await factory.methods.memberOf(accounts[1]).call();
+      const finalMemberIndexOne = await factory.methods.memberIndex(accounts[1]).call();
+      const finalManagerOfOne = await factory.methods.managerOf(accounts[1]).call();
+
+      // get final member 2 (regularTwo) values
+      const finalMemberOfTwo = await factory.methods.memberOf(accounts[3]).call();
+      const finalMemberIndexTwo = await factory.methods.memberIndex(accounts[3]).call();
+
+      // check member 1 (regularOne)
+      assert.notEqual(initialMemberOfOne, finalMemberOfOne);
+      assert.ok(initialMemberIndexOne, finalMemberIndexOne);
+      assert.notEqual(initialManagerOfOne, finalManagerOfOne);
+
+      // check member 2 (regularTwo)
+      assert.notEqual(initialMemberOfTwo, finalMemberOfTwo);
+      assert.notEqual(initialMemberIndexTwo, finalMemberIndexTwo);
+    });
+
+    it('should remove the Organization profile', async () => {
+      await factory.methods.organizationAddMembers([accounts[1], accounts[3]]).send({ from: accounts[2], gas: '1000000' });
+
+      organizationOne = await factory.methods.getUser(accounts[2]).call();
+      const initialRole = organizationOne[0];
+      const initialIpfsHash = organizationOne[1];
+      const initialMembers = organizationOne[2];
+
+      await factory.methods.deleteOrganization().send({ from: accounts[2], gas: '1000000' });
+
+      organizationOne = await factory.methods.getUser(accounts[2]).call();
+      const finalRole = organizationOne[0];
+      const finalIpfsHash = organizationOne[1];
+      const finalMembers = organizationOne[2];
+
+      assert.notEqual(initialRole, finalRole);
+      assert.notEqual(initialIpfsHash, finalIpfsHash);
+      assert.notEqual(initialMembers, finalMembers);
+    });
+  });
 
 });
