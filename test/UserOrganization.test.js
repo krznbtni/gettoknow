@@ -118,7 +118,7 @@ describe('Contract: UserOrganization', () => {
       await factory.methods.organizationAddMembers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
 
       // make regularUserOne a manager
-      await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.organizationAddManagers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
 
       // add regularUserTwo from regularUserOne (now a manager)
       await factory.methods.organizationAddMembers([accounts[3]]).send({ from: accounts[1], gas: '1000000' });
@@ -194,7 +194,7 @@ describe('Contract: UserOrganization', () => {
     it('should allow a manager to remove members', async () => {
       await factory.methods.organizationAddMembers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
       await factory.methods.organizationAddMembers([accounts[3]]).send({ from: accounts[2], gas: '1000000' });
-      await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.organizationAddManagers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
 
       let initialMemberOf = await factory.methods.memberOf(accounts[3]).call();
 
@@ -215,14 +215,14 @@ describe('Contract: UserOrganization', () => {
     });
   });
 
-  describe('Function: organizationAddManager(address _user)', () => {
+  describe('Function: organizationAddManagers(address[] _toAdd)', () => {
     it('should not allow a Regular member to add Manager', async () => {
       let revert;
       await factory.methods.organizationAddMembers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
       await factory.methods.organizationAddMembers([accounts[3]]).send({ from: accounts[2], gas: '1000000' });
 
       try {
-        await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[3], gas: '1000000' })
+        await factory.methods.organizationAddManagers([accounts[1]]).send({ from: accounts[3], gas: '1000000' })
       } catch (e) {
         revert = e;
       };
@@ -234,7 +234,7 @@ describe('Contract: UserOrganization', () => {
       let revert;
       
       try {
-        await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[2], gas: '1000000' });
+        await factory.methods.organizationAddManagers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
       } catch (e) {
         revert = e;
       }
@@ -245,10 +245,10 @@ describe('Contract: UserOrganization', () => {
     it('should not allow an Organization to add a manager who is already a manager of another organization', async () => {
       let revert;
       await factory.methods.organizationAddMembers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
-      await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.organizationAddManagers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
 
       try {
-        await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[3], gas: '1000000' });
+        await factory.methods.organizationAddManagers([accounts[1]]).send({ from: accounts[3], gas: '1000000' });
       } catch (e) {
         revert = e;
       }
@@ -258,7 +258,7 @@ describe('Contract: UserOrganization', () => {
 
     it('should allow an Organization to add a non-manager member as manager', async () => {
       await factory.methods.organizationAddMembers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
-      await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.organizationAddManagers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
 
       const managerOf = await factory.methods.managerOf(accounts[1]).call();
 
@@ -266,14 +266,14 @@ describe('Contract: UserOrganization', () => {
     });
   });
 
-  describe('Function: organizationRemoveManager(address _user)', () => {
+  describe('Function: organizationRemoveManagers(address[] _toAdd)', () => {
     it('should not allow a Regular member to remove a manager', async () => {
       let revert;
       await factory.methods.organizationAddMembers([accounts[1], accounts[3]]).send({ from: accounts[2], gas: '1000000' });
-      await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.organizationAddManagers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
 
       try {
-        await factory.methods.organizationRemoveManager(accounts[1]).send({ from: accounts[3], gas: '1000000' })
+        await factory.methods.organizationRemoveManagers([accounts[1]]).send({ from: accounts[3], gas: '1000000' })
       } catch (e) {
         revert = e;
       };
@@ -286,7 +286,7 @@ describe('Contract: UserOrganization', () => {
       await factory.methods.organizationAddMembers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
 
       try {
-        await factory.methods.organizationRemoveManager(accounts[1]).send({ from: accounts[2], gas: '1000000' })
+        await factory.methods.organizationRemoveManagers([accounts[1]]).send({ from: accounts[2], gas: '1000000' })
       } catch (e) {
         revert = e;
       };
@@ -297,10 +297,10 @@ describe('Contract: UserOrganization', () => {
     it('should not allow an Organization to remove a non-member Manager', async () => {
       let revert;
       await factory.methods.organizationAddMembers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
-      await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.organizationAddManagers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
 
       try {
-        await factory.methods.organizationRemoveManager(accounts[1]).send({ from: accounts[4], gas: '1000000' })
+        await factory.methods.organizationRemoveManagers([accounts[1]]).send({ from: accounts[4], gas: '1000000' })
       } catch (e) {
         revert = e;
       };
@@ -310,12 +310,12 @@ describe('Contract: UserOrganization', () => {
 
     it('should allow an Organization to remove a Manager', async () => {
       await factory.methods.organizationAddMembers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
-      await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.organizationAddManagers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
       const initialManagerOf = await factory.methods.managerOf(accounts[1]).call();
 
       assert.equal(initialManagerOf, accounts[2]);
 
-      await factory.methods.organizationRemoveManager(accounts[1]).send({ from: accounts[2], gas: '1000000' })
+      await factory.methods.organizationRemoveManagers([accounts[1]]).send({ from: accounts[2], gas: '1000000' })
       const finalManagerOf = await factory.methods.managerOf(accounts[1]).call();
 
       assert.notEqual(finalManagerOf, accounts[2]);
@@ -339,7 +339,7 @@ describe('Contract: UserOrganization', () => {
     it('should not allow a Manager member to delete the Organization', async () => {
       let revert;
       await factory.methods.organizationAddMembers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
-      await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.organizationAddManagers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
 
       try {
         await factory.methods.deleteOrganization().send({ from: accounts[1], gas: '1000000' });
@@ -352,7 +352,7 @@ describe('Contract: UserOrganization', () => {
 
     it('should, for every member, remove all associations with the Organization', async () => {
       await factory.methods.organizationAddMembers([accounts[1], accounts[3]]).send({ from: accounts[2], gas: '1000000' });
-      await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.organizationAddManagers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
 
       // get initial member 1 (regularOne) values
       const initialMemberOfOne = await factory.methods.memberOf(accounts[1]).call();

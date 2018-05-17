@@ -20,7 +20,9 @@ beforeEach(async () => {
     .deploy({ data: compiledFactory.bytecode })
     .send({ from: accounts[0], gas: '5000000' });
 
-  moderator = await factory.methods.getUser(accounts[0]).call();
+  // mod
+  await factory.methods.ownerSet(accounts[7], 3, 'ipfsHash').send({ from: accounts[0], gas: '1000000' });
+  moderator = await factory.methods.getUser(accounts[7]).call();
 
   await factory.methods.set(1, 'ipfsHash').send({ from: accounts[1], gas: '1000000' });
   regularUserOne = await factory.methods.getUser(accounts[1]).call();
@@ -36,7 +38,7 @@ beforeEach(async () => {
 });
 
 describe('Contract: UserModerator', () => {
-  it('should create a Moderator profile for accounts[0] on deployment', async () => {
+  it('should create a Moderator profile for accounts[7] on deployment', async () => {
     const role = moderator[0];
     assert.equal(3, role);
   });
@@ -66,8 +68,20 @@ describe('Contract: UserModerator', () => {
       assert.ok(revert instanceof Error);
     });
 
+    it('should not allow a Moderator to create a Moderator user', async () => {
+      let revert;
+
+      try {
+        await factory.methods.moderatorSet(accounts[5], 3, 'ipfsHash').send({ from: accounts[7], gas: '1000000' });
+      } catch (e) {
+        revert = e;
+      }
+
+      assert.ok(revert instanceof Error);
+    });
+
     it('should allow a Moderator to create a Regular user', async () => {
-      await factory.methods.moderatorSet(accounts[5], 1, 'ipfsHash').send({ from: accounts[0], gas: '1000000' });
+      await factory.methods.moderatorSet(accounts[5], 1, 'ipfsHash').send({ from: accounts[7], gas: '1000000' });
       const newRegular = await factory.methods.getUser(accounts[5]).call();
       const role = newRegular[0];
       const ipfsHash = newRegular[1];
@@ -77,22 +91,12 @@ describe('Contract: UserModerator', () => {
     });
 
     it('should allow a Moderator to create an Organization user', async () => {
-      await factory.methods.moderatorSet(accounts[5], 2, 'ipfsHash').send({ from: accounts[0], gas: '1000000' });
+      await factory.methods.moderatorSet(accounts[5], 2, 'ipfsHash').send({ from: accounts[7], gas: '1000000' });
       const newRegular = await factory.methods.getUser(accounts[5]).call();
       const role = newRegular[0];
       const ipfsHash = newRegular[1];
 
       assert.equal(role, 2);
-      assert.equal(ipfsHash, 'ipfsHash');
-    });
-
-    it('should allow a Moderator to create a Moderator user', async () => {
-      await factory.methods.moderatorSet(accounts[5], 3, 'ipfsHash').send({ from: accounts[0], gas: '1000000' });
-      const newRegular = await factory.methods.getUser(accounts[5]).call();
-      const role = newRegular[0];
-      const ipfsHash = newRegular[1];
-
-      assert.equal(role, 3);
       assert.equal(ipfsHash, 'ipfsHash');
     });
   });
@@ -122,11 +126,24 @@ describe('Contract: UserModerator', () => {
       assert.ok(revert instanceof Error);
     });
 
+    it('should not allow a Moderator to update a Moderator\'s role', async () => {
+      let revert;
+      await factory.methods.ownerSet(accounts[8], 3, 'ipfsHash').send({ from: accounts[0], gas: '1000000' });
+
+      try {
+        await factory.methods.moderatorSetRole(accounts[8], 1).send({ from: accounts[7], gas: '1000000' });
+      } catch (e) {
+        revert = e;
+      }
+
+      assert.ok(revert instanceof Error);
+    });
+
     it('should not allow a Moderator to set a user\'s role to UNSET (0)', async () => {
       let revert;
 
       try {
-        await factory.methods.moderatorSetRole(accounts[1], 0).send({ from: accounts[0], gas: '1000000' });
+        await factory.methods.moderatorSetRole(accounts[1], 0).send({ from: accounts[7], gas: '1000000' });
       } catch (e) {
         revert = e;
       }
@@ -137,7 +154,7 @@ describe('Contract: UserModerator', () => {
     it('should allow a Moderator to update a user\'s role', async () => {
       const initialRole = regularUserOne[0];
 
-      await factory.methods.moderatorSetRole(accounts[1], 2).send({ from: accounts[0], gas: '1000000' });
+      await factory.methods.moderatorSetRole(accounts[1], 2).send({ from: accounts[7], gas: '1000000' });
       
       regularUserOne = await factory.methods.getUser(accounts[1]).call();
       const finalRole = regularUserOne[0];
@@ -175,7 +192,7 @@ describe('Contract: UserModerator', () => {
     it('should allow a Moderator to update a user\'s ipfs profile hash', async () => {
       const initialIpfsHash = regularUserOne[1];
 
-      await factory.methods.moderatorSetProfile(accounts[1], 'newIpfsHash').send({ from: accounts[0], gas: '1000000' });
+      await factory.methods.moderatorSetProfile(accounts[1], 'newIpfsHash').send({ from: accounts[7], gas: '1000000' });
       
       regularUserOne = await factory.methods.getUser(accounts[1]).call();
       const finalIpfsHash = regularUserOne[1];
@@ -214,11 +231,11 @@ describe('Contract: UserModerator', () => {
       let revert;
       
       // organizationUserOne adds regularUserOne
-      await factory.methods.moderatorAddMembers(accounts[2], [accounts[1]]).send({ from: accounts[0], gas: '1000000 '});
+      await factory.methods.moderatorAddMembers(accounts[2], [accounts[1]]).send({ from: accounts[7], gas: '1000000 '});
 
       try {
         // organizationUserTwo tries to add regularUserOne
-        await factory.methods.moderatorAddMembers(accounts[4], [accounts[1]]).send({ from: accounts[0], gas: '1000000 '});
+        await factory.methods.moderatorAddMembers(accounts[4], [accounts[1]]).send({ from: accounts[7], gas: '1000000 '});
       } catch (e) {
         revert = e;
       }
@@ -230,7 +247,7 @@ describe('Contract: UserModerator', () => {
       let revert;
       
       try {
-        await factory.methods.moderatorAddMembers(accounts[2], [accounts[4]]).send({ from: accounts[0], gas: '1000000 '});
+        await factory.methods.moderatorAddMembers(accounts[2], [accounts[4]]).send({ from: accounts[7], gas: '1000000 '});
       } catch (e) {
         revert = e;
       }
@@ -243,7 +260,7 @@ describe('Contract: UserModerator', () => {
       const initialMembers = organizationUserOne[2];
 
       // add regularUserOne to organizationUserOne
-      await factory.methods.moderatorAddMembers(accounts[2], [accounts[1]]).send({ from: accounts[0], gas: '1000000 '});
+      await factory.methods.moderatorAddMembers(accounts[2], [accounts[1]]).send({ from: accounts[7], gas: '1000000 '});
 
       // get the new profile
       organizationUserOne = await factory.methods.getUser(accounts[2]).call();
@@ -264,7 +281,7 @@ describe('Contract: UserModerator', () => {
   describe('Function: moderatorRemoveMember(address _organization, address[] _toRemove)', () => {
     it('should not allow a Regular to call this function', async () => {
       let revert;
-      await factory.methods.moderatorAddMembers(accounts[2], [accounts[1], accounts[3]]).send({ from: accounts[0], gas: '1000000' });
+      await factory.methods.moderatorAddMembers(accounts[2], [accounts[1], accounts[3]]).send({ from: accounts[7], gas: '1000000' });
 
       try {
         await factory.methods.moderatorRemoveMembers(accounts[2], [accounts[1]]).send({ from: accounts[3], gas: '1000000' });
@@ -277,7 +294,7 @@ describe('Contract: UserModerator', () => {
 
     it('should not allow an Organization to call this function', async () => {
       let revert;
-      await factory.methods.moderatorAddMembers(accounts[2], [accounts[1], accounts[3]]).send({ from: accounts[0], gas: '1000000' });
+      await factory.methods.moderatorAddMembers(accounts[2], [accounts[1], accounts[3]]).send({ from: accounts[7], gas: '1000000' });
 
       try {
         await factory.methods.moderatorRemoveMembers(accounts[2], [accounts[1]]).send({ from: accounts[2], gas: '1000000' });
@@ -292,7 +309,7 @@ describe('Contract: UserModerator', () => {
       let revert;
 
       try {
-        await factory.methods.moderatorRemoveMembers(accounts[2], [accounts[1]]).send({ from: accounts[0], gas: '1000000' });
+        await factory.methods.moderatorRemoveMembers(accounts[2], [accounts[1]]).send({ from: accounts[7], gas: '1000000' });
       } catch (e) {
         revert = e;
       }
@@ -301,8 +318,8 @@ describe('Contract: UserModerator', () => {
     });
 
     it('should allow a Moderator to remove members from an Organization', async () => {
-      await factory.methods.moderatorAddMembers(accounts[2], [accounts[1], accounts[3]]).send({ from: accounts[0], gas: '1000000' });
-      await factory.methods.organizationAddManager(accounts[3]).send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.moderatorAddMembers(accounts[2], [accounts[1], accounts[3]]).send({ from: accounts[7], gas: '1000000' });
+      await factory.methods.organizationAddManagers([accounts[3]]).send({ from: accounts[2], gas: '1000000' });
 
       let initialMemberOf = await factory.methods.memberOf(accounts[3]).call();
       let initialManagerOf = await factory.methods.managerOf(accounts[3]).call();
@@ -310,7 +327,7 @@ describe('Contract: UserModerator', () => {
       organizationUserOne = await factory.methods.getUser(accounts[2]).call();
       let initialMembers = organizationUserOne[2];
 
-      await factory.methods.moderatorRemoveMembers(accounts[2], [accounts[3]]).send({ from: accounts[0], gas: '1000000' });
+      await factory.methods.moderatorRemoveMembers(accounts[2], [accounts[3]]).send({ from: accounts[7], gas: '1000000' });
 
       let finalMemberOf = await factory.methods.memberOf(accounts[3]).call();
       let finalManagerOf = await factory.methods.managerOf(accounts[3]).call();
@@ -352,8 +369,8 @@ describe('Contract: UserModerator', () => {
     });
 
     it('should, for every member, remove all associations with the Organization', async () => {
-      await factory.methods.moderatorAddMembers(accounts[2], [accounts[1], accounts[3]]).send({ from: accounts[0], gas: '1000000' });
-      await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.moderatorAddMembers(accounts[2], [accounts[1], accounts[3]]).send({ from: accounts[7], gas: '1000000' });
+      await factory.methods.organizationAddManagers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
 
       // get initial member 1 (regularOne) values
       const initialMemberOfOne = await factory.methods.memberOf(accounts[1]).call();
@@ -364,7 +381,7 @@ describe('Contract: UserModerator', () => {
       const initialMemberOfTwo = await factory.methods.memberOf(accounts[3]).call();
       const initialMemberIndexTwo = await factory.methods.memberIndex(accounts[3]).call();
 
-      await factory.methods.moderatorDeleteOrganization(accounts[2]).send({ from: accounts[0], gas: '1000000' });
+      await factory.methods.moderatorDeleteOrganization(accounts[2]).send({ from: accounts[7], gas: '1000000' });
 
       // get final member 1 (regularOne) values
       const finalMemberOfOne = await factory.methods.memberOf(accounts[1]).call();
@@ -386,14 +403,14 @@ describe('Contract: UserModerator', () => {
     });
 
     it('should remove the Organization profile', async () => {
-      await factory.methods.moderatorAddMembers(accounts[2], [accounts[1], accounts[3]]).send({ from: accounts[0], gas: '1000000' });
+      await factory.methods.moderatorAddMembers(accounts[2], [accounts[1], accounts[3]]).send({ from: accounts[7], gas: '1000000' });
 
       organizationOne = await factory.methods.getUser(accounts[2]).call();
       const initialRole = organizationOne[0];
       const initialIpfsHash = organizationOne[1];
       const initialMembers = organizationOne[2];
 
-      await factory.methods.moderatorDeleteOrganization(accounts[2]).send({ from: accounts[0], gas: '1000000' });
+      await factory.methods.moderatorDeleteOrganization(accounts[2]).send({ from: accounts[7], gas: '1000000' });
 
       organizationOne = await factory.methods.getUser(accounts[2]).call();
       const finalRole = organizationOne[0];
@@ -404,9 +421,125 @@ describe('Contract: UserModerator', () => {
       assert.notEqual(initialIpfsHash, finalIpfsHash);
       assert.notEqual(initialMembers, finalMembers);
     });
-
-    
   });
 
-  // describe('Function: moderatorDeleteRegular(address _user)', () => { });
+  describe('Function: moderatorDeleteRegular(address _user)', () => {
+    it('should not allow a Regular to call this function', async () => {
+      let revert;
+
+      try {
+        await factory.methods.moderatorDeleteRegular(accounts[3]).send({ from: accounts[1], gas: '1000000' });
+      } catch (e) {
+        revert = e;
+      }
+
+      assert.ok(revert instanceof Error);
+    });
+
+    it('should not allow an Organization to call this function', async () => {
+      let revert;
+
+      try {
+        await factory.methods.moderatorDeleteRegular(accounts[3]).send({ from: accounts[2], gas: '1000000' });
+      } catch (e) {
+        revert = e;
+      }
+
+      assert.ok(revert instanceof Error);
+    });
+
+    it('should revert when the target is not a Regular user', async () => {
+      let revert;
+
+      try {
+        await factory.methods.moderatorDeleteRegular(accounts[0]).send({ from: accounts[7], gas: '1000000' });
+      } catch (e) {
+        revert = e;
+      }
+
+      assert.ok(revert instanceof Error);
+    });
+
+    it('should delete the Regular user profile', async () => {
+      // first add regularUserOne to organizationUser
+      await factory.methods.organizationAddMembers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
+      // then add regularUserOne as manager of the organization
+      await factory.methods.organizationAddManagers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
+
+      const initialRole = regularUserOne[0];
+      const initialIpfsHash = regularUserOne[1];
+      const initialMemberOf = await factory.methods.memberOf(accounts[1]).call();
+      const initialMemberIndex = await factory.methods.memberIndex(accounts[1]).call();
+      const initialManagerOf = await factory.methods.managerOf(accounts[1]).call();
+
+      // user deletes itself
+      await factory.methods.moderatorDeleteRegular(accounts[1]).send({ from: accounts[7], gas: '1000000' });
+
+      // get profile again
+      regularUserOne = await factory.methods.getUser(accounts[1]).call();
+      const finalRole = regularUserOne[0];
+      const finalIpfsHash = regularUserOne[1];
+      const finalMemberOf = await factory.methods.memberOf(accounts[1]).call();
+      const finalMemberIndex = await factory.methods.memberIndex(accounts[1]).call();
+      const finalManagerOf = await factory.methods.managerOf(accounts[1]).call();
+
+      assert.notEqual(initialRole, finalRole);
+      assert.notEqual(initialIpfsHash, finalIpfsHash);
+      assert.notEqual(initialMemberOf, finalMemberOf);
+      assert.equal(initialMemberIndex, finalMemberIndex);
+      assert.notEqual(initialManagerOf, finalManagerOf);
+    })
+  });
+
+  describe('Function: deleteModerator()', () => {
+    it('should not allow a Regular to call this function', async () => {
+      let revert;
+
+      try {
+        await factory.methods.deleteModerator().send({ from: accounts[1], gas: '1000000' });
+      } catch (e) {
+        revert = e;
+      }
+
+      assert.ok(revert instanceof Error);
+    });
+
+    it('should not allow an Organization to call this function', async () => {
+      let revert;
+
+      try {
+        await factory.methods.deleteModerator().send({ from: accounts[2], gas: '1000000' });
+      } catch (e) {
+        revert = e;
+      }
+
+      assert.ok(revert instanceof Error);
+    });
+
+    it('should not allow contract Owner to call this function', async () => {
+      let revert;
+
+      try {
+        await factory.methods.deleteModerator().send({ from: accounts[0], gas: '1000000' });
+      } catch (e) {
+        revert = e;
+      }
+
+      assert.ok(revert instanceof Error);
+    });
+
+    it('should delete the moderator\'s profile', async () => {
+      const initialRole = moderator[0];
+      const initialIpfsHash = moderator[1];
+
+      await factory.methods.deleteModerator().send({ from: accounts[7], gas: '1000000' });
+
+      moderator = await factory.methods.getUser(accounts[7]).call();
+      const finalRole = moderator[0];
+      const finalIpfsHash = moderator[1];
+
+      assert.notEqual(initialRole, finalRole);
+      assert.notEqual(initialIpfsHash, finalIpfsHash);
+    });
+  });
 });

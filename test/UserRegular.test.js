@@ -100,7 +100,7 @@ describe('Contract: UserRegular', () => {
       // first add regularUser to organizationUser
       await factory.methods.organizationAddMembers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
       // then add regularUser as manager of the organization
-      await factory.methods.organizationAddManager(accounts[1]).send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.organizationAddManagers([accounts[1]]).send({ from: accounts[2], gas: '1000000' });
 
       const initialRole = regularUser[0];
       const initialIpfsHash = regularUser[1];

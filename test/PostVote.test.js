@@ -27,7 +27,7 @@ beforeEach(async () => {
 
 describe('Contract: PostVote', () => {
   describe('Function: vote(uint256 _postId, bool _value)', () => {
-    it('should not allow a non-registered user to call this function', async () => {
+    it('should not allow a non-registered to call this function', async () => {
       // post will have id 0
       await factory.methods.createPost('ipfsHash', 100, 0).send({ from: accounts[1], gas: '1000000', value: web3.utils.toWei('1', 'ether') });
 
@@ -35,6 +35,21 @@ describe('Contract: PostVote', () => {
 
       try {
         await factory.methods.vote(0, true).send({ from: accounts[2], gas: '1000000' });
+      } catch (e) {
+        revert = e;
+      }
+      
+      assert.ok(revert instanceof Error);
+    });
+
+    it('should not allow the post owner to call this function', async () => {
+      // post will have id 0
+      await factory.methods.createPost('ipfsHash', 100, 0).send({ from: accounts[1], gas: '1000000', value: web3.utils.toWei('1', 'ether') });
+
+      let revert;
+
+      try {
+        await factory.methods.vote(0, true).send({ from: accounts[1], gas: '1000000' });
       } catch (e) {
         revert = e;
       }

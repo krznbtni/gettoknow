@@ -29,8 +29,9 @@ describe('Contract: PostDelete', () => {
 
   describe('Function: deletePost(uint256 _postId)', () => {
 
-    it('should revert when not called by the postOwner', async () => {
+    it('should revert when not called by the postOwner or a Moderator', async () => {
       await factory.methods.createPost('ipfsHash', 100, 0).send({ from: accounts[1], gas: '1000000', value: web3.utils.toWei('1', 'ether') });
+      await factory.methods.set(1, 'ipfsHash').send({ from: accounts[2], gas: '500000' });
 
       let revert;
 
@@ -60,7 +61,7 @@ describe('Contract: PostDelete', () => {
       assert.notEqual(initialOwnerBalance, finalOwnerBalance);
     });
 
-    it('should delete all post associations', async () => {
+    it('should delete all post associations (called by postOwner)', async () => {
       await factory.methods.createPost('ipfsHash', 100, 0).send({ from: accounts[1], gas: '1000000', value: web3.utils.toWei('1', 'ether') });
       await factory.methods.set(1, 'ipfsHash').send({ from: accounts[2], gas: '1000000' });
       await factory.methods.vote(0, true).send({ from: accounts[2], gas: '1000000' });
@@ -71,6 +72,29 @@ describe('Contract: PostDelete', () => {
       const initialPostOwner = await factory.methods.postOwner(0).call();
 
       await factory.methods.deletePost(0).send({ from: accounts[1], gas: '1000000' });
+
+      const finalBase = await factory.methods.base(0).call();
+      const finalPostHash = await factory.methods.postHashes(0).call();
+      const finalVotes = await factory.methods.votes(0).call();
+      const finalPostOwner = await factory.methods.postOwner(0).call();
+
+      assert.notEqual(initialBase, finalBase);
+      assert.notEqual(initialPostHash, finalPostHash);
+      assert.notEqual(initialVotes, finalVotes);
+      assert.notEqual(initialPostOwner, finalPostOwner);
+    });
+
+    it('should delete all post associations (called by Moderator)', async () => {
+      await factory.methods.createPost('ipfsHash', 100, 0).send({ from: accounts[1], gas: '1000000', value: web3.utils.toWei('1', 'ether') });
+      await factory.methods.set(1, 'ipfsHash').send({ from: accounts[2], gas: '1000000' });
+      await factory.methods.vote(0, true).send({ from: accounts[2], gas: '1000000' });
+
+      const initialBase = await factory.methods.base(0).call();
+      const initialPostHash = await factory.methods.postHashes(0).call();
+      const initialVotes = await factory.methods.votes(0).call();
+      const initialPostOwner = await factory.methods.postOwner(0).call();
+
+      await factory.methods.deletePost(0).send({ from: accounts[0], gas: '1000000' });
 
       const finalBase = await factory.methods.base(0).call();
       const finalPostHash = await factory.methods.postHashes(0).call();
