@@ -63,4 +63,4 @@ typings/
 
 .DS_Store
 
-# contract build folder
+.vscode/

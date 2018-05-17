@@ -11,6 +11,7 @@ const input = {
   'Ownable.sol': fs.readFileSync('./ethereum/contracts/Ownable.sol', 'utf8'),
   'Users.sol': fs.readFileSync('./ethereum/contracts/Users.sol', 'utf8'),
   'UserGeneral.sol': fs.readFileSync('./ethereum/contracts/UserGeneral.sol', 'utf8'),
+  'UserOwner.sol': fs.readFileSync('./ethereum/contracts/UserOwner.sol', 'utf8'),
   'UserModerator.sol': fs.readFileSync('./ethereum/contracts/UserModerator.sol', 'utf8'),
   'UserOrganization.sol': fs.readFileSync('./ethereum/contracts/UserOrganization.sol', 'utf8'),
   'UserRegular.sol': fs.readFileSync('./ethereum/contracts/UserRegular.sol', 'utf8'),
