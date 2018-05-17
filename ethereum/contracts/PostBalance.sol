@@ -6,6 +6,10 @@ contract PostBalance is PostStorage {
   event OnDeposit (uint256 postId, uint256 amount, address caller);
   event OnWithdraw (uint256 postId, uint256 amount, address caller);
   
+  /**
+    * @dev Allows increasing the Post's balance.
+    * @param _postId the post's id.
+    */
   function deposit(uint256 _postId) public payable {
     bytes32 packedBase = base[_postId];
     uint256 balance = packedBase.getData(0, 64);
@@ -17,6 +21,12 @@ contract PostBalance is PostStorage {
     emit OnDeposit(_postId, msg.value, msg.sender);
   }
   
+  /**
+    * @dev Allows withdrawal of the Post's balance.
+    * Throws if not called by the post's creator.
+    * @param _postId the post's id.
+    * @param _amount the value to be withdrawn.
+    */
   function withdraw(uint256 _postId, uint256 _amount) public {
     require(postOwner[_postId] == msg.sender);
     bytes32 packedBase = base[_postId];

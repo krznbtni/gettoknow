@@ -5,9 +5,14 @@ import './PostView.sol';
 contract PostVote is PostView {
   event OnVote (uint256 indexed postId, bool indexed value, address indexed caller);
   
-  // create an update function ...
+  /**
+    * @dev Allows voting on a Post.
+    * Throws if the caller's role is Unset and if postOwner is the caller
+    * @param _postId the post's id.
+    * @param _value true/false
+    */
   function vote(uint256 _postId, bool _value) public {
-    require(users[msg.sender].role != Users.Role(0));
+    require(users[msg.sender].role != Users.Role(0) && postOwner[_postId] != msg.sender);
     bytes32 packedVotes = votes[_postId];
     uint256 upVotes = packedVotes.getData(0, 128);
     uint256 downVotes = packedVotes.getData(128, 128);

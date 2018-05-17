@@ -26,6 +26,7 @@ library Users {
     * @param _role new User role
     */
   function setRole(User storage user, uint256 _role) internal {
+    require(user.role != Role(0));
     require(_role > 0 && _role < 4);
     user.role = Role(_role);
   }

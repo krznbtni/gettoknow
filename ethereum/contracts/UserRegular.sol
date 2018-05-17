@@ -5,7 +5,8 @@ import './UserOrganization.sol';
 contract UserRegular is UserOrganization {
   
   /**
-    * @dev "2-in-1" create and update user
+    * @dev Allows to create a profile
+    * Throws if (_role == Unset || _role == Moderator)
     * @param _role User role
     * @param _profile User profile (ipfs hash)
     */
@@ -15,7 +16,8 @@ contract UserRegular is UserOrganization {
   }
   
   /**
-    * @dev update User role
+    * @dev Allows to update user role
+    * Throws if (_role == Unset || _role == Moderator)
     * @param _role new User role
     */
   function setRole(uint256 _role) public {
@@ -24,7 +26,8 @@ contract UserRegular is UserOrganization {
   }
   
   /**
-    * @dev update User profile
+    * @dev Allows to update ipfs hash
+    * Throws if (_role == Unset || _role == Moderator)
     * @param _profile new User profile (ipfs hash)
     */
   function setProfile(string _profile) public {
@@ -32,7 +35,7 @@ contract UserRegular is UserOrganization {
   }
   
   /**
-    * @dev delete User
+    * @dev Allows deleting of entire profile
     */
   function deleteRegular() public {
     delete memberOf[msg.sender];

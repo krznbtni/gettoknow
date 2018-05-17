@@ -6,20 +6,26 @@ contract UserOrganization is UserModerator {
   
   /**
     * @dev add Manager to Organization
-    * @param _user User address
+    * @param _toAdd User address
     */
-  function organizationAddManager(address _user) public {
-    require(memberOf[_user] == msg.sender && managerOf[_user] == 0x0);
-    managerOf[_user] = msg.sender;
+  function organizationAddManagers(address[] _toAdd) public {
+    for (uint256 i = 0; i < _toAdd.length; i++) {
+      require(memberOf[_toAdd[i]] == msg.sender && managerOf[_toAdd[i]] == 0x0);
+      managerOf[_toAdd[i]] = msg.sender;
+      emit OnAddManagers(msg.sender, _toAdd[i], msg.sender);
+    }
   }
   
   /**
     * @dev remove Manager from Organization
-    * @param _user User address
+    * @param _toRemove User address
     */
-  function organizationRemoveManager(address _user) public {
-    require(memberOf[_user] == msg.sender && managerOf[_user] == msg.sender);
-    delete managerOf[_user];
+  function organizationRemoveManagers(address[] _toRemove) public {
+    for (uint256 i = 0; i < _toRemove.length; i++) {
+      require(memberOf[_toRemove[i]] == msg.sender && managerOf[_toRemove[i]] == msg.sender);
+      delete managerOf[_toRemove[i]];
+      emit OnRemoveManagers(msg.sender, _toRemove[i], msg.sender);
+    }
   }
   
   /**

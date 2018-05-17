@@ -14,6 +14,15 @@ contract UserGeneral is Ownable {
   mapping(address => address) public memberOf;
   mapping(address => uint256) public memberIndex;
   mapping(address => address) public managerOf;
+
+  event OnSetUser(address indexed _user, uint256 _role, string _profile, address indexed _caller);
+  event OnSetRole(address indexed _user, uint256 _role, address indexed caller);
+  event OnSetProfile(address indexed _user, address indexed _caller);
+  event OnDel(address indexed _user, address indexed _caller);
+  event OnAddMembers(address indexed _organization, address indexed _user, address indexed _caller);
+  event OnRemoveMembers(address indexed _organization, address indexed _user, address indexed _caller);
+  event OnAddManagers(address indexed _organization, address indexed _toAdd, address indexed _caller);
+  event OnRemoveManagers(address indexed _organization, address indexed _toRemove, address indexed _caller);
   
   /**
     * @dev "2-in-1" create and update user
@@ -29,6 +38,7 @@ contract UserGeneral is Ownable {
     }
     
     userCount = userCount.add(1);
+    emit OnSetUser(_user, _role, _profile, msg.sender);
   }
   
   /**
@@ -38,6 +48,7 @@ contract UserGeneral is Ownable {
     */
   function setRole(address _user, uint256 _role) internal {
     users[_user].setRole(_role);
+    emit OnSetRole(_user, _role, msg.sender);
   }
   
   /**
@@ -47,6 +58,7 @@ contract UserGeneral is Ownable {
     */
   function setProfile(address _user, string _profile) internal {
     users[_user].setProfile(_profile);
+    emit OnSetProfile(_user, msg.sender);
   }
   
   /**
@@ -56,6 +68,7 @@ contract UserGeneral is Ownable {
   function del(address _user) internal {
     users[_user].del();
     userCount = userCount.sub(1);
+    emit OnDel(_user, msg.sender);
   }
   
   /**
@@ -87,6 +100,8 @@ contract UserGeneral is Ownable {
       
       // push _toAdd into _organization's array of members
       users[_organization].addMember(_toAdd[i]);
+      
+      emit OnAddMembers(_organization, _toAdd[i], msg.sender);
     }
   }
   
@@ -114,6 +129,8 @@ contract UserGeneral is Ownable {
 
       // delete memberIndex
       delete memberIndex[_toRemove[i]];
+
+      emit OnRemoveMembers(_organization, _toRemove[i], msg.sender);
     }
   }
 }
