@@ -14,6 +14,7 @@ const deploy = async () => {
     console.log('Attempting to deploy from account: ', accounts[0]);
 
     const gasEstimate = await web3.eth.estimateGas({ data: factoryBytecode });
+    console.log('gasEstimate: ', gasEstimate);
 
     const result = await new web3.eth.Contract(JSON.parse(compiledFactory.interface))
       .deploy({ data: '0x' + compiledFactory.bytecode })
